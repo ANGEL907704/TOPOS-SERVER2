@@ -1,0 +1,42 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from fpdf import FPDF
+import os
+
+def make_report():
+    print("Чтение данных...")
+    df = pd.read_csv('survey_data.csv')
+    
+    min_z = df['Z'].min()
+    max_z = df['Z'].max()
+    diff_z = max_z - min_z
+    
+    print("Построение графиков...")
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(df['X'], df['Y'], df['Z'], c=df['Z'], cmap='terrain', s=100)
+    plt.savefig('topo_plot.png')
+    
+    fig2, ax2 = plt.subplots(figsize=(10, 7))
+    scatter2 = ax2.scatter(df['X'], df['Y'], c=df['Z'], cmap='plasma', s=200)
+    fig2.colorbar(scatter2, label='Высота, м')
+    plt.savefig('topo_heatmap.png')
+    
+    print("Создание отчета...")
+    pdf = FPDF()
+    pdf.add_font("DejaVu", style="", fname="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+    pdf.add_page()
+    pdf.set_font("DejaVu", size=16)
+    pdf.cell(200, 10, txt="Справка по топосъемке", ln=True, align='C')
+    
+    pdf.set_font("DejaVu", size=12)
+    pdf.cell(200, 10, txt=f"Максимальная высота: {max_z} м", ln=True)
+    pdf.cell(200, 10, txt=f"Минимальная высота: {min_z} м", ln=True)
+    pdf.cell(200, 10, txt=f"Перепад высот: {diff_z:.2f} м", ln=True)
+    
+    pdf.image('topo_heatmap.png', x=10, y=70, w=180)
+    pdf.output("Topos_Report.pdf")
+    print("ГОТОВО!")
+
+if __name__ == "__main__":
+    make_report()
