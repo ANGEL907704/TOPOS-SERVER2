@@ -1,0 +1,25 @@
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+
+st.title("🌍 Topos Server")
+st.subheader("Веб-интерфейс для обработки топосъемки")
+
+uploaded_file = st.file_uploader("Загрузите CSV файл с данными", type="csv")
+
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    st.write("### Ваши данные (первые 5 строк):", df.head())
+    
+    if st.button("Сделать расчет и построить карту"):
+        min_z = df['Z'].min()
+        max_z = df['Z'].max()
+        diff_z = max_z - min_z
+        
+        fig, ax = plt.subplots()
+        scatter = ax.scatter(df['X'], df['Y'], c=df['Z'], cmap='plasma', s=100)
+        fig.colorbar(scatter, label='Высота')
+        st.write("### Тепловая карта высот:")
+        st.pyplot(fig)
+        
+        st.success(f"Макс. высота: {max_z} м | Мин. высота: {min_z} м | Перепад: {diff_z:.2f} м")
